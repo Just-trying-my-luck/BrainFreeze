@@ -22,6 +22,12 @@ class CharacterDetailScreen:
 		)
 		role.pack(pady=10)
 		
+		birth_date = tk.Label(
+			self.frame,
+			text=f"Born: {self.character['birth_date']}",
+			font=("Helvetica", 16)
+		)
+		birth_date.pack(pady=10)
 		back_button = tk.Button(
 			self.frame,
 			text="Back",
