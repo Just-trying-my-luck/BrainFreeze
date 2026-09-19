@@ -232,6 +232,8 @@ class BrainFreezeSandbox:
                 # Markdown frozen chunks
                 if hasattr(self, "selected_markdown_chunks"):
 
+                    markdown_by_subject = {}
+
                     for combined_string in self.selected_markdown_chunks:
 
                         if "||" in combined_string:
@@ -244,12 +246,25 @@ class BrainFreezeSandbox:
 
                                     if chunk["title"] == chunk_title:
 
-                                        body = "\n".join(chunk["lines"]).strip()
+                                        subject = chunk["subject"]
 
-                                        column_text += f"• [{chunk['subject']}] {chunk_title}\n"
+                                        if subject not in markdown_by_subject:
+                                            markdown_by_subject[subject] = []
 
-                                        if body:
-                                            column_text += f"{body}\n\n"
+                                        markdown_by_subject[subject].append(chunk)
+
+                    for subject, chunks in markdown_by_subject.items():
+
+                        column_text += f"\n[{subject}]\n\n"
+
+                        for chunk in chunks:
+
+                            body = "\n".join(chunk["lines"]).strip()
+
+                            column_text += f"• {chunk['title']}\n"
+
+                            if body:
+                                column_text += f"{body}\n\n"
 
                 txt = tk.Text(
                     box_content,
