@@ -69,6 +69,9 @@ class BrainFreezeSandbox:
         self.root.bind("<Return>", lambda e: self.simulate_hardware_trigger("SELECT"))
         self.root.bind("<Escape>", lambda e: self.simulate_hardware_trigger("BACK"))
         self.root.bind("<space>", lambda e: self.simulate_hardware_trigger("COMPILE"))
+        self.root.bind("r", lambda e: self.simulate_hardware_trigger("CHARACTER"))
+        self.root.bind("y", lambda e: self.simulate_hardware_trigger("SCENE"))
+        self.root.bind("g", lambda e: self.simulate_hardware_trigger("RESEARCH"))
         self.root.bind("s", lambda e: self.simulate_hardware_trigger("TIMER_SET"))
         self.root.bind("x", lambda e: self.simulate_hardware_trigger("TIMER_EXEC"))
         self.root.bind("q", lambda e: self.root.destroy())
@@ -166,6 +169,262 @@ class BrainFreezeSandbox:
 
         self.cursor_index = self.folder_history.get(self.current_dir, 0)
 
+    def render_freeze_character(self):
+        """Displays the Character Freeze Frame."""
+
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        screen = tk.Frame(
+            self.root,
+            bg="#FFA7A7"
+        )
+        screen.pack(
+            fill="both",
+            expand=True,
+            padx=20,
+            pady=20
+        )
+
+        tk.Label(
+            screen,
+            text="CHARACTER: BIOMETRICS DEPLOYED",
+            font=self.font_bold,
+            fg="#7A0000",
+            bg="#FFA7A7"
+        ).pack(
+            anchor="w",
+            pady=(0, 8)
+        )
+
+        tk.Label(
+            screen,
+            text="=" * 70,
+            font=self.font_body,
+            fg="#5A0000",
+            bg="#FFA7A7"
+        ).pack(
+            anchor="w"
+        )
+
+        character_text = ""
+
+        # Existing line-based selections
+        for combined_string in self.selected_lines:
+
+            if "||" in combined_string:
+
+                origin_path, line_content = combined_string.split(
+                    "||",
+                    1
+                )
+
+                if "01_characters" in origin_path:
+
+                    character_text += f"• {line_content}\n\n"
+
+        # Markdown frozen chunks
+        if hasattr(self, "selected_markdown_chunks"):
+
+            markdown_by_subject = {}
+
+            for combined_string in self.selected_markdown_chunks:
+
+                if "||" in combined_string:
+
+                    origin_path, chunk_title = combined_string.split(
+                        "||",
+                        1
+                    )
+
+                    if "01_characters" in origin_path:
+
+                        for chunk in getattr(
+                            self,
+                            "markdown_chunks",
+                            []
+                        ):
+
+                            if chunk["title"] == chunk_title:
+
+                                subject = chunk["subject"]
+
+                                if subject not in markdown_by_subject:
+                                    markdown_by_subject[subject] = []
+
+                                markdown_by_subject[subject].append(
+                                    chunk
+                                )
+
+            for subject, chunks in markdown_by_subject.items():
+
+                character_text += f"\n{subject}\n"
+                character_text += "-" * 70
+                character_text += "\n\n"
+
+                for chunk in chunks:
+
+                    body = "\n".join(
+                        chunk["lines"]
+                    ).strip()
+
+                    character_text += f"{chunk['title']}\n"
+
+                    if body:
+                        character_text += f"{body}\n\n"
+
+        txt = tk.Text(
+            screen,
+            font=self.font_body,
+            fg="#000000",
+            bg="#FFA7A7",
+            wrap="word",
+            bd=0,
+            highlightthickness=0,
+            spacing1=0,
+            spacing3=0
+        )
+
+        txt.insert(
+            "1.0",
+            character_text if character_text else "[NO CHARACTER INFORMATION SELECTED]\n"
+        )
+
+        txt.config(state="disabled")
+
+        txt.pack(
+            fill="both",
+            expand=True,
+            pady=15
+        )
+        tk.Label(
+            screen,
+            text="R = Character     Y = Scene     G = Research",
+            font=self.font_body,
+            fg="#5A0000",
+            bg="#FFA7A7"
+        ).pack(
+            anchor="w"
+        )
+
+    def render_freeze_scene(self):
+        """Displays the Scene Freeze Frame."""
+
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        screen = tk.Frame(
+            self.root,
+            bg="#FEFFAB"
+        )
+        screen.pack(
+            fill="both",
+            expand=True,
+            padx=20,
+            pady=20
+        )
+
+        tk.Label(
+            screen,
+            text="SCENE: ANCHORS SECURED",
+            font=self.font_bold,
+            fg="#514B00",
+            bg="#FEFFAB"
+        ).pack(
+            anchor="w",
+            pady=(0, 8)
+        )
+
+        tk.Label(
+            screen,
+            text="=" * 70,
+            font=self.font_body,
+            fg="#665F00",
+            bg="#FEFFAB"
+        ).pack(
+            anchor="w"
+        )
+
+        tk.Label(
+            screen,
+            text="SCENE SCREEN",
+            font=self.font_body,
+            fg="#000000",
+            bg="#FEFFAB"
+        ).pack(
+            anchor="w",
+            pady=20
+        )
+
+        tk.Label(
+            screen,
+            text="R = Character     Y = Scene     G = Research",
+            font=self.font_body,
+            fg="#665F00",
+            bg="#FEFFAB"
+        ).pack(
+            anchor="w"
+        )
+
+    def render_freeze_research(self):
+        """Displays the Research Freeze Frame."""
+
+        for widget in self.root.winfo_children():
+            widget.destroy()
+
+        screen = tk.Frame(
+            self.root,
+            bg="#C4FFCB"
+        )
+        screen.pack(
+            fill="both",
+            expand=True,
+            padx=20,
+            pady=20
+        )
+
+        tk.Label(
+            screen,
+            text="RESEARCH: COORDINATES ISOLATED",
+            font=self.font_bold,
+            fg="#365C1F",
+            bg="#C4FFCB"
+        ).pack(
+            anchor="w",
+            pady=(0, 8)
+        )
+
+        tk.Label(
+            screen,
+            text="=" * 70,
+            font=self.font_body,
+            fg="#4F663F",
+            bg="#C4FFCB"
+        ).pack(
+            anchor="w"
+        )
+
+        tk.Label(
+            screen,
+            text="RESEARCH SCREEN",
+            font=self.font_body,
+            fg="#000000",
+            bg="#C4FFCB"
+        ).pack(
+            anchor="w",
+            pady=20
+        )
+
+        tk.Label(
+            screen,
+            text="R = Character     Y = Scene     G = Research",
+            font=self.font_body,
+            fg="#4F663F",
+            bg="#C4FFCB"
+        ).pack(
+            anchor="w"
+        )
+
     def render_chassis(self):
         for widget in self.root.winfo_children():
             widget.destroy()
@@ -198,6 +457,14 @@ class BrainFreezeSandbox:
             self.list_pane.pack(fill="both", expand=True, padx=15)
             self.repaint_json_rows()
 
+        elif self.mode == "freeze_character":
+            self.render_freeze_character()
+
+        elif self.mode == "freeze_scene":
+            self.render_freeze_scene()
+
+        elif self.mode == "freeze_research":
+            self.render_freeze_research()
 
         elif self.mode == "compiled":
             grid_system = tk.Frame(self.canvas, bg=COLOR_BG)
@@ -287,89 +554,224 @@ class BrainFreezeSandbox:
                 txt.pack(fill="both", expand=True, padx=15, pady=5)
 
 
-    def repaint_menu_rows(self):
+    def repaint_markdown_rows(self):
         for w in self.list_pane.winfo_children():
             w.destroy()
 
-        rel_path = self.current_dir.replace(SD_ROOT, "SYS://")
+        # Create a scrollable area for the Markdown document.
+        scroll_canvas = tk.Canvas(
+            self.list_pane,
+            bg=COLOR_BG,
+            highlightthickness=0,
+            bd=0
+        )
+
+        scrollbar = tk.Scrollbar(
+            self.list_pane,
+            orient="vertical",
+            command=scroll_canvas.yview
+        )
+
+        scroll_canvas.configure(
+            yscrollcommand=scrollbar.set
+        )
+
+        scrollbar.pack(
+            side="right",
+            fill="y"
+        )
+
+        scroll_canvas.pack(
+            side="left",
+            fill="both",
+            expand=True
+        )
+
+        scroll_frame = tk.Frame(
+            scroll_canvas,
+            bg=COLOR_BG
+        )
+
+        scroll_window = scroll_canvas.create_window(
+            (0, 0),
+            window=scroll_frame,
+            anchor="nw"
+        )
+
+        def update_scroll_region(event=None):
+            scroll_canvas.configure(
+                scrollregion=scroll_canvas.bbox("all")
+            )
+
+        scroll_frame.bind(
+            "<Configure>",
+            update_scroll_region
+        )
+
+        def resize_scroll_frame(event):
+            scroll_canvas.itemconfig(
+                scroll_window,
+                width=event.width
+            )
+
+        scroll_canvas.bind(
+            "<Configure>",
+            resize_scroll_frame
+        )
+
+        # Mouse-wheel scrolling while using the computer.
+        scroll_canvas.bind(
+            "<MouseWheel>",
+            lambda event: scroll_canvas.yview_scroll(
+                int(-1 * (event.delta / 120)),
+                "units"
+            )
+        )
+
+        filename = os.path.basename(self.current_file_path)
 
         tk.Label(
-            self.list_pane,
-            text=f"PATH: {rel_path}",
+            scroll_frame,
+            text=f"REFERENCE MODULE: {filename}\n",
             font=self.font_bold,
             fg=COLOR_MUTED,
             bg=COLOR_BG
         ).pack(anchor="w")
 
-        tk.Label(
-            self.list_pane,
-            text=f"ITEM {self.cursor_index + 1}/{len(self.visible_items)}",
-            font=self.font_body,
-            fg=COLOR_MUTED,
-            bg=COLOR_BG
-        ).pack(anchor="w")
+        # Build freezeable Markdown chunks.
+        self.markdown_chunks = []
 
-        # Number of rows visible at one time
-        visible_rows = 12
+        current_chunk = None
+        current_subject = ""
+        current_category = ""
 
-        # Work out which part of the list should be displayed.
-        if len(self.visible_items) <= visible_rows:
-            start_idx = 0
-        else:
-            start_idx = self.cursor_index - (visible_rows // 2)
+        for line in self.file_lines:
 
-            if start_idx < 0:
-                start_idx = 0
+            # # heading = major section.
+            # It is context only, never selectable.
+            if line.startswith("# ") and not line.startswith("## "):
 
-            max_start = len(self.visible_items) - visible_rows
+                if current_chunk is not None:
+                    self.markdown_chunks.append(current_chunk)
+                    current_chunk = None
 
-            if start_idx > max_start:
-                start_idx = max_start
+                current_subject = ""
+                current_category = ""
 
-        end_idx = min(
-            start_idx + visible_rows,
-            len(self.visible_items)
-        )
+            # ## heading = current subject.
+            # It is context only, never selectable.
+            elif line.startswith("## "):
 
-        # Draw only the portion of the directory currently in view.
-        for idx in range(start_idx, end_idx):
-            item = self.visible_items[idx]
+                if current_chunk is not None:
+                    self.markdown_chunks.append(current_chunk)
+                    current_chunk = None
 
-            full_path = os.path.join(
-                self.current_dir,
-                item["name"]
+                current_subject = line[3:].strip()
+                current_category = ""
+
+            # ### heading = current category.
+            # It is context only, never selectable.
+            elif line.startswith("### "):
+
+                if current_chunk is not None:
+                    self.markdown_chunks.append(current_chunk)
+                    current_chunk = None
+
+                current_category = line[4:].strip()
+
+            # #### heading = new freezeable chunk.
+            elif line.startswith("#### "):
+
+                if current_chunk is not None:
+                    self.markdown_chunks.append(current_chunk)
+
+                current_chunk = {
+                    "title": line[5:].strip(),
+                    "subject": current_subject,
+                    "category": current_category,
+                    "lines": []
+                }
+
+            # Everything after #### belongs to that chunk.
+            elif current_chunk is not None:
+                current_chunk["lines"].append(line)
+
+        # Add the final chunk.
+        if current_chunk is not None:
+            self.markdown_chunks.append(current_chunk)
+
+        # Show the chunks.
+        displayed_subject = None
+        displayed_category = None
+
+        for idx, chunk in enumerate(self.markdown_chunks):
+
+            subject = chunk["subject"]
+            category = chunk["category"]
+
+            # Show the ## subject as context.
+            if subject != displayed_subject:
+
+                tk.Label(
+                    scroll_frame,
+                    text=subject,
+                    font=self.font_bold,
+                    fg=COLOR_MUTED,
+                    bg=COLOR_BG,
+                    anchor="w",
+                    justify="left",
+                    padx=15,
+                    pady=10
+                ).pack(fill="x")
+
+                displayed_subject = subject
+                displayed_category = None
+
+            # Show the ### category as context.
+            if category and category != displayed_category:
+
+                tk.Label(
+                    scroll_frame,
+                    text=category,
+                    font=self.font_bold,
+                    fg=COLOR_WHITE,
+                    bg=COLOR_BG,
+                    anchor="w",
+                    justify="left",
+                    padx=30,
+                    pady=5
+                ).pack(fill="x")
+
+                displayed_category = category
+
+            title = chunk["title"]
+            body = "\n".join(chunk["lines"]).strip()
+
+            chunk_text = title
+
+            if idx == self.markdown_cursor:
+                chunk_text = "▶ " + chunk_text
+
+            unique_chunk_key = (
+                f"{self.current_file_path}||{title}"
             )
 
-            icon = "📁" if item["is_dir"] else "📄"
+            if unique_chunk_key in self.selected_markdown_chunks:
+                chunk_text = "🔒 " + chunk_text
 
-            matches = sum(
-                1
-                for p_line in self.selected_lines
-                if p_line.startswith(full_path)
-            )
-
-            tether_label = (
-                f" [{matches} EXTRACTED]"
-                if matches > 0
-                else ""
-            )
-
-            is_active = (idx == self.cursor_index)
+            if body:
+                chunk_text += f"\n\n{body}"
 
             lbl = tk.Label(
-                self.list_pane,
-                text=f"{'> ' if is_active else '  '}"
-                     f"{icon} {item['name']}"
-                     f"{'/' if item['is_dir'] else ''}"
-                     f"{tether_label}",
+                scroll_frame,
+                text=chunk_text,
                 font=self.font_body,
-                fg=COLOR_CYAN if is_active else (
-                    COLOR_WHITE if matches > 0 else COLOR_MUTED
-                ),
+                fg=COLOR_WHITE,
                 bg=COLOR_BG,
                 anchor="w",
-                padx=15,
-                pady=6
+                justify="left",
+                padx=45,
+                pady=10
             )
 
             lbl.pack(fill="x")
@@ -445,6 +847,54 @@ class BrainFreezeSandbox:
 
             lbl.pack(fill="x")             
 
+    def repaint_menu_rows(self):
+        for w in self.list_pane.winfo_children():
+            w.destroy()
+
+        # Display folder path marker
+        rel_path = self.current_dir.replace(SD_ROOT, "SYS://")
+        tk.Label(
+            self.list_pane,
+            text=f"PATH: {rel_path}\n",
+            font=self.font_bold,
+            fg=COLOR_MUTED,
+            bg=COLOR_BG
+        ).pack(anchor="w")
+
+        for idx, item in enumerate(self.visible_items):
+            full_path = os.path.join(self.current_dir, item["name"])
+            icon = "📁" if item["is_dir"] else "📄"
+
+            matches = sum(
+                1 for p_line in self.selected_lines
+                if p_line.startswith(full_path)
+            )
+
+            markdown_matches = sum(
+                1 for p_chunk in self.selected_markdown_chunks
+                if p_chunk.startswith(full_path)
+            )
+
+            matches += markdown_matches
+
+            tether_label = f" [{matches} EXTRACTED]" if matches > 0 else ""
+
+            is_active = (idx == self.cursor_index)
+
+            lbl = tk.Label(
+                self.list_pane,
+                text=f"  {icon} {item['name']}{'/' if item['is_dir'] else ''}{tether_label}",
+                font=self.font_body,
+                fg=COLOR_CYAN if is_active else (
+                    COLOR_WHITE if matches > 0 else COLOR_MUTED
+                ),
+                bg=COLOR_HIGHLIGHT if is_active else COLOR_BG,
+                anchor="w",
+                padx=15,
+                pady=6
+            )
+            lbl.pack(fill="x")
+
     def repaint_line_rows(self):
         for w in self.list_pane.winfo_children():
             w.destroy()
@@ -509,8 +959,85 @@ class BrainFreezeSandbox:
         for w in self.list_pane.winfo_children():
             w.destroy()
 
+        # Create a scrollable area for the Markdown document.
+        scroll_canvas = tk.Canvas(
+            self.list_pane,
+            bg=COLOR_BG,
+            highlightthickness=0,
+            bd=0
+        )
+
+        scrollbar = tk.Scrollbar(
+            self.list_pane,
+            orient="vertical",
+            command=scroll_canvas.yview
+        )
+
+        scroll_canvas.configure(
+            yscrollcommand=scrollbar.set
+        )
+
+        scrollbar.pack(
+            side="right",
+            fill="y"
+        )
+
+        scroll_canvas.pack(
+            side="left",
+            fill="both",
+            expand=True
+        )
+
+        scroll_frame = tk.Frame(
+            scroll_canvas,
+            bg=COLOR_BG
+        )
+
+        scroll_window = scroll_canvas.create_window(
+            (0, 0),
+            window=scroll_frame,
+            anchor="nw"
+        )
+
+        def update_scroll_region(event=None):
+            scroll_canvas.configure(
+                scrollregion=scroll_canvas.bbox("all")
+            )
+
+        scroll_frame.bind(
+            "<Configure>",
+            update_scroll_region
+        )
+
+        def resize_scroll_frame(event):
+            scroll_canvas.itemconfig(
+                scroll_window,
+                width=event.width
+            )
+
+        scroll_canvas.bind(
+            "<Configure>",
+            resize_scroll_frame
+        )
+
+        # Mouse-wheel scrolling while using the computer.
+        scroll_canvas.bind(
+            "<MouseWheel>",
+            lambda event: scroll_canvas.yview_scroll(
+                int(-1 * (event.delta / 120)),
+                "units"
+            )
+        )
+
         filename = os.path.basename(self.current_file_path)
 
+        tk.Label(
+            scroll_frame,
+            text=f"REFERENCE MODULE: {filename}\n",
+            font=self.font_bold,
+            fg=COLOR_MUTED,
+            bg=COLOR_BG
+        ).pack(anchor="w")
         tk.Label(
             self.list_pane,
             text=f"REFERENCE MODULE: {filename}\n",
@@ -524,14 +1051,43 @@ class BrainFreezeSandbox:
 
         current_chunk = None
         current_subject = ""
+        current_category = ""
 
         for line in self.file_lines:
 
-            # ## heading = current subject
-            if line.startswith("## "):
-                current_subject = line[3:].strip()
+            # # heading = major section.
+            # It is context only, never selectable.
+            if line.startswith("# ") and not line.startswith("## "):
 
-            # #### heading = new freezeable chunk
+                if current_chunk is not None:
+                    self.markdown_chunks.append(current_chunk)
+                    current_chunk = None
+
+                current_subject = ""
+                current_category = ""
+
+            # ## heading = current subject.
+            # It is context only, never selectable.
+            elif line.startswith("## "):
+
+                if current_chunk is not None:
+                    self.markdown_chunks.append(current_chunk)
+                    current_chunk = None
+
+                current_subject = line[3:].strip()
+                current_category = ""
+
+            # ### heading = current category.
+            # It is context only, never selectable.
+            elif line.startswith("### "):
+
+                if current_chunk is not None:
+                    self.markdown_chunks.append(current_chunk)
+                    current_chunk = None
+
+                current_category = line[4:].strip()
+
+            # #### heading = new freezeable chunk.
             elif line.startswith("#### "):
 
                 if current_chunk is not None:
@@ -540,10 +1096,11 @@ class BrainFreezeSandbox:
                 current_chunk = {
                     "title": line[5:].strip(),
                     "subject": current_subject,
+                    "category": current_category,
                     "lines": []
                 }
 
-            # Everything after #### belongs to that chunk
+            # Everything after #### belongs to that chunk.
             elif current_chunk is not None:
                 current_chunk["lines"].append(line)
 
@@ -552,7 +1109,48 @@ class BrainFreezeSandbox:
             self.markdown_chunks.append(current_chunk)
 
         # Show the chunks.
+        displayed_subject = None
+        displayed_category = None
+
         for idx, chunk in enumerate(self.markdown_chunks):
+
+            subject = chunk["subject"]
+            category = chunk["category"]
+
+            # Show the ## subject as context.
+            if subject != displayed_subject:
+
+                tk.Label(
+                    self.list_pane,
+                    text=subject,
+                    font=self.font_bold,
+                    fg=COLOR_MUTED,
+                    bg=COLOR_BG,
+                    anchor="w",
+                    justify="left",
+                    padx=15,
+                    pady=10
+                ).pack(fill="x")
+
+                displayed_subject = subject
+                displayed_category = None
+
+            # Show the ### category as context.
+            if category and category != displayed_category:
+
+                tk.Label(
+                    self.list_pane,
+                    text=category,
+                    font=self.font_bold,
+                    fg=COLOR_WHITE,
+                    bg=COLOR_BG,
+                    anchor="w",
+                    justify="left",
+                    padx=30,
+                    pady=5
+                ).pack(fill="x")
+
+                displayed_category = category
 
             title = chunk["title"]
             body = "\n".join(chunk["lines"]).strip()
@@ -562,7 +1160,9 @@ class BrainFreezeSandbox:
             if idx == self.markdown_cursor:
                 chunk_text = "▶ " + chunk_text
 
-            unique_chunk_key = f"{self.current_file_path}||{title}"
+            unique_chunk_key = (
+                f"{self.current_file_path}||{title}"
+            )
 
             if unique_chunk_key in self.selected_markdown_chunks:
                 chunk_text = "🔒 " + chunk_text
@@ -578,12 +1178,11 @@ class BrainFreezeSandbox:
                 bg=COLOR_BG,
                 anchor="w",
                 justify="left",
-                padx=15,
+                padx=45,
                 pady=10
             )
 
-            lbl.pack(fill="x") 
-    
+            lbl.pack(fill="x")
     def simulate_hardware_trigger(self, action):
         """Processes keyboard maps and cleanly mocks physical input behavior."""
 
@@ -701,10 +1300,25 @@ class BrainFreezeSandbox:
                 "line_browser",
                 "json_browser",
                 "markdown_browser",
-                "compiled"
+                "compiled",
+                "freeze_character",
+                "freeze_scene",
+                "freeze_research"
             ]:
                 self.mode = "menu"
                 self.render_chassis()
+
+        elif action == "CHARACTER":
+            self.mode = "freeze_character"
+            self.render_chassis()
+
+        elif action == "SCENE":
+            self.mode = "freeze_scene"
+            self.render_chassis()
+
+        elif action == "RESEARCH":
+            self.mode = "freeze_research"
+            self.render_chassis()
 
         elif action == "COMPILE":
             self.compiled_markdown_chunks = []
@@ -741,7 +1355,7 @@ class BrainFreezeSandbox:
                         if unique_chunk_key in self.selected_markdown_chunks:
                             self.compiled_markdown_chunks.append(chunk)
 
-            self.mode = "compiled"
+            self.mode = "freeze_character"
             self.render_chassis()
 
         elif action == "TIMER_SET":
