@@ -140,6 +140,7 @@ class BrainFreezeSandbox:
         """Wipes all extracted freeze-frame selections."""
 
         self.selected_lines.clear()
+        self.selected_markdown_chunks.clear()
 
         try:
             if os.path.exists(CACHE_FILE):
@@ -224,37 +225,20 @@ class BrainFreezeSandbox:
                     character_text += f"• {line_content}\n\n"
 
         # Markdown frozen chunks
-        if hasattr(self, "selected_markdown_chunks"):
+        if hasattr(self, "compiled_markdown_chunks"):
 
             markdown_by_subject = {}
 
-            for combined_string in self.selected_markdown_chunks:
+            for chunk in self.compiled_markdown_chunks:
 
-                if "||" in combined_string:
+                subject = chunk.get("subject", "")
 
-                    origin_path, chunk_title = combined_string.split(
-                        "||",
-                        1
-                    )
+                if subject not in markdown_by_subject:
+                    markdown_by_subject[subject] = []
 
-                    if "01_characters" in origin_path:
-
-                        for chunk in getattr(
-                            self,
-                            "markdown_chunks",
-                            []
-                        ):
-
-                            if chunk["title"] == chunk_title:
-
-                                subject = chunk["subject"]
-
-                                if subject not in markdown_by_subject:
-                                    markdown_by_subject[subject] = []
-
-                                markdown_by_subject[subject].append(
-                                    chunk
-                                )
+                markdown_by_subject[subject].append(
+                    chunk
+                )
 
             for subject, chunks in markdown_by_subject.items():
 
@@ -425,6 +409,76 @@ class BrainFreezeSandbox:
             anchor="w"
         )
 
+    def get_markdown_chunk(self, filepath, chunk_title):
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                lines = [
+                    l.rstrip()
+                    for l in f.readlines()
+                    if l.strip()
+                ]
+
+            current_subject = ""
+            current_category = ""
+            current_chunk = None
+
+            for line in lines:
+
+                if line.startswith("# ") and not line.startswith("## "):
+
+                    if current_chunk is not None:
+                        if current_chunk["title"] == chunk_title:
+                            return current_chunk
+                        current_chunk = None
+
+                    current_subject = ""
+                    current_category = ""
+
+                elif line.startswith("## "):
+
+                    if current_chunk is not None:
+                        if current_chunk["title"] == chunk_title:
+                            return current_chunk
+                        current_chunk = None
+
+                    current_subject = line[3:].strip()
+                    current_category = ""
+
+                elif line.startswith("### "):
+
+                    if current_chunk is not None:
+                        if current_chunk["title"] == chunk_title:
+                            return current_chunk
+                        current_chunk = None
+
+                    current_category = line[4:].strip()
+
+                elif line.startswith("#### "):
+
+                    if current_chunk is not None:
+                        if current_chunk["title"] == chunk_title:
+                            return current_chunk
+
+                    current_chunk = {
+                        "title": line[5:].strip(),
+                        "subject": current_subject,
+                        "category": current_category,
+                        "filepath": filepath,
+                        "lines": []
+                    }
+
+                elif current_chunk is not None:
+                    current_chunk["lines"].append(line)
+
+            if current_chunk is not None:
+                if current_chunk["title"] == chunk_title:
+                    return current_chunk
+
+        except Exception as e:
+            print(f"Markdown chunk error: {e}")
+
+        return None
+
     def render_chassis(self):
         for widget in self.root.winfo_children():
             widget.destroy()
@@ -507,18 +561,22 @@ class BrainFreezeSandbox:
 
                             origin_path, chunk_title = combined_string.split("||", 1)
 
+                            print("FREEZE PATH TEST:", keyword, "IN", origin_path, "=", keyword in origin_path)
+
                             if keyword in origin_path:
 
-                                for chunk in getattr(self, "markdown_chunks", []):
+                                chunk = self.get_markdown_chunk(origin_path, chunk_title)
 
-                                    if chunk["title"] == chunk_title:
+                                print("FREEZE LOOKUP:", origin_path, "||", chunk_title, "FOUND:", chunk is not None)
 
-                                        subject = chunk["subject"]
+                                if chunk is not None:
 
-                                        if subject not in markdown_by_subject:
-                                            markdown_by_subject[subject] = []
+                                    subject = chunk["subject"]
 
-                                        markdown_by_subject[subject].append(chunk)
+                                    if subject not in markdown_by_subject:
+                                        markdown_by_subject[subject] = []
+
+                                    markdown_by_subject[subject].append(chunk)
 
                     for subject, chunks in markdown_by_subject.items():
 
@@ -689,6 +747,7 @@ class BrainFreezeSandbox:
                     "title": line[5:].strip(),
                     "subject": current_subject,
                     "category": current_category,
+                    "filepath": self.current_file_path,
                     "lines": []
                 }
 
@@ -1285,6 +1344,7 @@ class BrainFreezeSandbox:
                 else:
                     self.selected_markdown_chunks.add(unique_chunk_key)
                 self.save_session_cache()
+                print("SELECTED MARKDOWN:", self.selected_markdown_chunks)
                 self.repaint_markdown_rows()
 
         elif action == "BACK":
@@ -1325,35 +1385,23 @@ class BrainFreezeSandbox:
 
             if hasattr(self, "selected_markdown_chunks"):
 
-                # If Markdown chunks are not currently loaded,
-                # rebuild them from the saved Markdown selection.
-                if not hasattr(self, "markdown_chunks"):
+                for combined_string in self.selected_markdown_chunks:
 
-                    if self.selected_markdown_chunks:
+                    if "||" in combined_string:
 
-                        saved_selection = next(
-                            iter(self.selected_markdown_chunks)
+                        origin_path, chunk_title = combined_string.split(
+                            "||", 1
                         )
 
-                        if "||" in saved_selection:
-                            saved_path, saved_title = saved_selection.split(
-                                "||", 1
+                        if os.path.exists(origin_path):
+
+                            chunk = self.get_markdown_chunk(
+                                origin_path,
+                                chunk_title
                             )
 
-                            if os.path.exists(saved_path):
-                                self.open_line_browser(saved_path)
-
-                # Now collect the selected Markdown chunks.
-                if hasattr(self, "markdown_chunks"):
-
-                    for chunk in self.markdown_chunks:
-
-                        unique_chunk_key = (
-                            f"{self.current_file_path}||{chunk['title']}"
-                        )
-
-                        if unique_chunk_key in self.selected_markdown_chunks:
-                            self.compiled_markdown_chunks.append(chunk)
+                            if chunk is not None:
+                                self.compiled_markdown_chunks.append(chunk)
 
             self.mode = "freeze_character"
             self.render_chassis()
