@@ -115,11 +115,33 @@ class BrainFreezeSandbox:
                     )
 
                 # Support the old cache format
-                elif ininstance(cache_data, list):
+                elif isinstance(cache_data, list):
                     self.selected_lines = set(cache_data)
 
             except Exception as e:
                 print(f"Cache load error: {e}")
+
+                # Rebuild compiled Markdown selections
+        self.compiled_markdown_chunks = []
+
+        for combined_string in self.selected_markdown_chunks:
+
+            if "||" in combined_string:
+
+                origin_path, chunk_title = combined_string.split(
+                    "||",
+                    1
+                )
+
+                if os.path.exists(origin_path):
+
+                    chunk = self.get_markdown_chunk(
+                        origin_path,
+                        chunk_title
+                    )
+
+                    if chunk is not None:
+                        self.compiled_markdown_chunks.append(chunk)
 
     def save_session_cache(self):
         try:
