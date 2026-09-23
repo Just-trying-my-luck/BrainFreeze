@@ -1119,13 +1119,7 @@ class BrainFreezeSandbox:
             fg=COLOR_MUTED,
             bg=COLOR_BG
         ).pack(anchor="w")
-        tk.Label(
-            self.list_pane,
-            text=f"REFERENCE MODULE: {filename}\n",
-            font=self.font_bold,
-            fg=COLOR_MUTED,
-            bg=COLOR_BG
-        ).pack(anchor="w")
+        tk.Label
 
         # Build freezeable Markdown chunks.
         self.markdown_chunks = []
@@ -1202,7 +1196,7 @@ class BrainFreezeSandbox:
             if subject != displayed_subject:
 
                 tk.Label(
-                    self.list_pane,
+                    scroll_frame,
                     text=subject,
                     font=self.font_bold,
                     fg=COLOR_MUTED,
@@ -1220,7 +1214,7 @@ class BrainFreezeSandbox:
             if category and category != displayed_category:
 
                 tk.Label(
-                    self.list_pane,
+                    scroll_frame,
                     text=category,
                     font=self.font_bold,
                     fg=COLOR_WHITE,
@@ -1252,7 +1246,7 @@ class BrainFreezeSandbox:
                 chunk_text += f"\n\n{body}"
 
             lbl = tk.Label(
-                self.list_pane,
+                scroll_frame,
                 text=chunk_text,
                 font=self.font_body,
                 fg=COLOR_WHITE,
